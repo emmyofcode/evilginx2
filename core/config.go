@@ -41,6 +41,7 @@ type PhishletConfig struct {
 	UnauthUrl string `mapstructure:"unauth_url" json:"unauth_url" yaml:"unauth_url"`
 	Enabled   bool   `mapstructure:"enabled" json:"enabled" yaml:"enabled"`
 	Visible   bool   `mapstructure:"visible" json:"visible" yaml:"visible"`
+	CaptchaEnabled bool `mapstructure:"captcha_enabled" json:"captcha_enabled" yaml:"captcha_enabled"`
 }
 
 type ProxyConfig struct {
@@ -260,6 +261,28 @@ func (c *Config) SetSiteUnauthUrl(site string, _url string) bool {
 	c.PhishletConfig(site).UnauthUrl = _url
 	c.SavePhishlets()
 	return true
+}
+
+func (c *Config) EnableCaptcha(site string, enabled bool) error {
+	pl, err := c.GetPhishlet(site)
+	if err != nil {
+		return err
+	}
+	if pl.isTemplate {
+		return fmt.Errorf("phishlet '%s' is a template - you have to 'create' child phishlet from it, with predefined parameters, before you can enable captcha.", site)
+	}
+	c.PhishletConfig(site).CaptchaEnabled = enabled
+	if enabled {
+		log.Info("captcha enabled for phishlet '%s'", site)
+	} else {
+		log.Info("captcha disabled for phishlet '%s'", site)
+	}
+	c.SavePhishlets()
+	return nil
+}
+
+func (c *Config) IsCaptchaEnabled(site string) bool {
+	return c.PhishletConfig(site).CaptchaEnabled
 }
 
 func (c *Config) SetBaseDomain(domain string) {

