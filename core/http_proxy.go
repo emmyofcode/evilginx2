@@ -179,12 +179,10 @@ const CAPTCHA_HTML = `<!DOCTYPE html>
                     flag = false;
                     a2.style.display = 'none';
                     a3.style.display = 'block';
-                    a4.textContent = 'Confirm you're human';
+                    a4.textContent = 'Confirm you\'re human';
                     a5.textContent = 'Tick the box to proceed.';
-                }
-                , 1800);
-            }
-            );
+                }, 1800);
+            });
             a3.addEventListener('change', () => {
                 if (a3.checked && !flag) {
                     flag = true;
@@ -197,12 +195,10 @@ const CAPTCHA_HTML = `<!DOCTYPE html>
                         a1.classList.add('done');
                         a4.textContent = 'Completed successfully';
                         a5.textContent = 'You are now verified.';
-                    }
-                    , 1500);
+                    }, 1500);
                     setTimeout( () => form.submit(), 3000);
                 }
-            }
-            );
+            });
         </script>
     </body>
 </html>`
