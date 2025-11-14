@@ -131,3 +131,50 @@ func (bl *Blacklist) IsWhitelisted(ip string) bool {
 	}
 	return false
 }
+
+func (bl *Blacklist) RemoveIP(ip string) error {
+	ipv4 := net.ParseIP(ip)
+	if ipv4 == nil {
+		return fmt.Errorf("invalid ip address: %s", ip)
+	}
+
+	ip_str := ipv4.String()
+	
+	// Remove from map
+	if _, exists := bl.ips[ip_str]; exists {
+		delete(bl.ips, ip_str)
+		
+		// Rewrite the blacklist file without the removed IP
+		return bl.writeToFile()
+	}
+	
+	return fmt.Errorf("ip address '%s' not found in blacklist", ip)
+}
+
+func (bl *Blacklist) writeToFile() error {
+	f, err := os.Create(bl.configPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// Write individual IPs
+	for ip := range bl.ips {
+		_, err := f.WriteString(ip + "\n")
+		if err != nil {
+			return err
+		}
+	}
+	
+	// Write network masks
+	for _, mask := range bl.masks {
+		if mask.mask != nil {
+			_, err := f.WriteString(mask.mask.String() + "\n")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	
+	return nil
+}

