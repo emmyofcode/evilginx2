@@ -42,9 +42,6 @@ credentials:
 auth_urls:
   - '/common/SAS/ProcessAuth'
   - '/kmsi'
-login:
-  domain: 'login.microsoftonline.com'
-  path: '/' 
 force_post:
   - path: '/kmsi'
     search: 
